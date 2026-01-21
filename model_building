@@ -1,0 +1,64 @@
+# model_development.py
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, accuracy_score
+import joblib
+
+def train_model():
+    # 1. Load the dataset
+    # Ensure 'train.csv' is in the same directory (or the 'model' folder if you prefer)
+    try:
+        df = pd.read_csv('train.csv')
+        print("Dataset loaded successfully.")
+    except FileNotFoundError:
+        print("Error: 'train.csv' not found. Please check the file path.")
+        return
+
+    # 2. Feature Selection
+    features = ['Pclass', 'Sex', 'Age', 'Fare', 'Embarked']
+    target = 'Survived'
+    
+    X = df[features].copy() # Use .copy() to avoid SettingWithCopyWarning
+    y = df[target]
+
+    # 3. Data Preprocessing
+    print("Preprocessing data...")
+    
+    # a. Handling missing values
+    X['Age'] = X['Age'].fillna(X['Age'].median())
+    X['Embarked'] = X['Embarked'].fillna(X['Embarked'].mode()[0])
+    X['Fare'] = X['Fare'].fillna(X['Fare'].median())
+
+    # b. Encoding categorical variables (Manual mapping ensures consistency in the App)
+    # Sex: male -> 0, female -> 1
+    X['Sex'] = X['Sex'].map({'male': 0, 'female': 1})
+    
+    # Embarked: S -> 0, C -> 1, Q -> 2
+    X['Embarked'] = X['Embarked'].map({'S': 0, 'C': 1, 'Q': 2})
+
+    # 4. Split the data
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # 5. Model Implementation: Random Forest Classifier
+    print("Training Random Forest Classifier...")
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train, y_train)
+
+    # 6. Evaluation
+    y_pred = model.predict(X_test)
+    print("\n--- Classification Report ---")
+    print(classification_report(y_test, y_pred))
+    print(f"Accuracy: {accuracy_score(y_test, y_pred):.2f}")
+
+    # 7. Save the trained model
+    joblib.dump(model, 'titanic_model.pkl')
+    print("\nModel saved as 'titanic_model.pkl'")
+
+    # 8. Verification (Reload test)
+    loaded_model = joblib.load('titanic_model.pkl')
+    print("Verification: Model reloaded successfully.")
+
+if __name__ == "__main__":
+    train_model()
