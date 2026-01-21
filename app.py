@@ -15,7 +15,7 @@ def load_model():
         try:
             return joblib.load('titanic_model.pkl')
         except FileNotFoundError:
-            return joblib.load('model/titanic_model.pkl')
+            return joblib.load('titanic_model.pkl')
     except FileNotFoundError:
         return None
 
@@ -82,4 +82,5 @@ if st.button("Predict Survival", type="primary"):
         st.success(f"**Result: SURVIVED** (Confidence: {probability:.1%})")
         st.balloons()
     else:
+
         st.error(f"**Result: DID NOT SURVIVE** (Confidence: {1-probability:.1%})")
